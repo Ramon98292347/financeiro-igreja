@@ -19,9 +19,10 @@ interface EntradaSalva {
 interface EntradaSalvaCardProps {
   entrada: EntradaSalva;
   onDelete: (id: string) => void;
+  compact?: boolean;
 }
 
-const EntradaSalvaCard: React.FC<EntradaSalvaCardProps> = ({ entrada, onDelete }) => {
+const EntradaSalvaCard: React.FC<EntradaSalvaCardProps> = ({ entrada, onDelete, compact = false }) => {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR', {
       day: '2-digit',
@@ -66,56 +67,56 @@ const EntradaSalvaCard: React.FC<EntradaSalvaCardProps> = ({ entrada, onDelete }
   const styles = getCardStyles();
 
   return (
-    <div className={`p-4 rounded-lg shadow-sm border ${styles.cardClass}`}>
-      <div className="flex items-center justify-between mb-3">
+    <div className={`${compact ? 'p-3' : 'p-4'} rounded-lg shadow-sm border ${styles.cardClass}`}>
+      <div className={`flex items-center justify-between ${compact ? 'mb-2' : 'mb-3'}`}>
         <div className="flex flex-col">
           <div className="flex items-center mb-1">
-            <Banknote className={`w-4 h-4 mr-2 ${styles.iconColor}`} />
-            <span className={`text-sm font-semibold ${styles.titleColor}`}>
+            <Banknote className={`${compact ? 'w-3 h-3' : 'w-4 h-4'} mr-2 ${styles.iconColor}`} />
+            <span className={`${compact ? 'text-xs' : 'text-sm'} font-semibold ${styles.titleColor}`}>
               {entrada.type === 'dizimos' ? 'Dízimos' : 
                entrada.type === 'ofertas' ? 'Ofertas' : 
                entrada.type === 'ofertas-missionarias' ? 'Ofertas Missionárias' : 'Entrada'}
             </span>
           </div>
           <div className="flex items-center text-gray-500">
-            <Calendar className="w-3 h-3 mr-1" />
-            <span className="text-xs">{formatDate(entrada.date)}</span>
+            <Calendar className={`${compact ? 'w-2 h-2' : 'w-3 h-3'} mr-1`} />
+            <span className={`${compact ? 'text-xs' : 'text-xs'}`}>{formatDate(entrada.date)}</span>
           </div>
         </div>
         <button
           onClick={() => onDelete(entrada.id)}
           className="text-red-500 hover:text-red-700 transition-colors"
         >
-          <Trash2 className="w-4 h-4" />
+          <Trash2 className={`${compact ? 'w-3 h-3' : 'w-4 h-4'}`} />
         </button>
       </div>
       
-      <div className="mb-4">
-        <p className={`text-2xl font-bold ${styles.totalColor}`}>
+      <div className={`${compact ? 'mb-3' : 'mb-4'}`}>
+        <p className={`${compact ? 'text-lg' : 'text-2xl'} font-bold ${styles.totalColor}`}>
           R$ {entrada.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
         </p>
-        <p className="text-sm text-gray-500">Total geral</p>
+        <p className={`${compact ? 'text-xs' : 'text-sm'} text-gray-500`}>Total geral</p>
       </div>
 
       {/* Payment Methods Breakdown */}
       {(entrada.dinheiro || entrada.pix || entrada.cartao) && (
-        <div className="mb-4">
-          <p className="text-sm font-semibold text-gray-700 mb-3">Formas de Pagamento:</p>
-          <div className="grid grid-cols-1 gap-3">
+        <div className={`${compact ? 'mb-3' : 'mb-4'}`}>
+          <p className={`${compact ? 'text-xs' : 'text-sm'} font-semibold text-gray-700 ${compact ? 'mb-2' : 'mb-3'}`}>Formas de Pagamento:</p>
+          <div className={`grid grid-cols-1 ${compact ? 'gap-2' : 'gap-3'}`}>
             {entrada.dinheiro && entrada.dinheiro > 0 && (
-              <div className="bg-white p-3 rounded-lg border border-green-200 shadow-sm">
+              <div className={`bg-white ${compact ? 'p-2' : 'p-3'} rounded-lg border border-green-200 shadow-sm`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                      <Banknote className="w-4 h-4 text-green-600" />
+                    <div className={`${compact ? 'w-6 h-6' : 'w-8 h-8'} bg-green-100 rounded-lg flex items-center justify-center`}>
+                      <Banknote className={`${compact ? 'w-3 h-3' : 'w-4 h-4'} text-green-600`} />
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900 text-sm">Dinheiro</p>
-                      <p className="text-xs text-gray-500">Notas e moedas</p>
+                      <p className={`font-semibold text-gray-900 ${compact ? 'text-xs' : 'text-sm'}`}>Dinheiro</p>
+                      {!compact && <p className="text-xs text-gray-500">Notas e moedas</p>}
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-green-600">
+                    <p className={`font-bold text-green-600 ${compact ? 'text-xs' : 'text-sm'}`}>
                       R$ {entrada.dinheiro.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </p>
                     <p className="text-xs text-gray-500">
@@ -126,19 +127,19 @@ const EntradaSalvaCard: React.FC<EntradaSalvaCardProps> = ({ entrada, onDelete }
               </div>
             )}
             {entrada.pix && entrada.pix > 0 && (
-              <div className="bg-white p-3 rounded-lg border border-blue-200 shadow-sm">
+              <div className={`bg-white ${compact ? 'p-2' : 'p-3'} rounded-lg border border-blue-200 shadow-sm`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <Smartphone className="w-4 h-4 text-blue-600" />
+                    <div className={`${compact ? 'w-6 h-6' : 'w-8 h-8'} bg-blue-100 rounded-lg flex items-center justify-center`}>
+                      <Smartphone className={`${compact ? 'w-3 h-3' : 'w-4 h-4'} text-blue-600`} />
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900 text-sm">PIX/OCT</p>
-                      <p className="text-xs text-gray-500">Transferências digitais</p>
+                      <p className={`font-semibold text-gray-900 ${compact ? 'text-xs' : 'text-sm'}`}>PIX/OCT</p>
+                      {!compact && <p className="text-xs text-gray-500">Transferências digitais</p>}
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-blue-600">
+                    <p className={`font-bold text-blue-600 ${compact ? 'text-xs' : 'text-sm'}`}>
                       R$ {entrada.pix.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </p>
                     <p className="text-xs text-gray-500">
@@ -149,19 +150,19 @@ const EntradaSalvaCard: React.FC<EntradaSalvaCardProps> = ({ entrada, onDelete }
               </div>
             )}
             {entrada.cartao && entrada.cartao > 0 && (
-              <div className="bg-white p-3 rounded-lg border border-purple-200 shadow-sm">
+              <div className={`bg-white ${compact ? 'p-2' : 'p-3'} rounded-lg border border-purple-200 shadow-sm`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <CreditCard className="w-4 h-4 text-purple-600" />
+                    <div className={`${compact ? 'w-6 h-6' : 'w-8 h-8'} bg-purple-100 rounded-lg flex items-center justify-center`}>
+                      <CreditCard className={`${compact ? 'w-3 h-3' : 'w-4 h-4'} text-purple-600`} />
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900 text-sm">Cartão</p>
-                      <p className="text-xs text-gray-500">Débito e crédito</p>
+                      <p className={`font-semibold text-gray-900 ${compact ? 'text-xs' : 'text-sm'}`}>Cartão</p>
+                      {!compact && <p className="text-xs text-gray-500">Débito e crédito</p>}
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-purple-600">
+                    <p className={`font-bold text-purple-600 ${compact ? 'text-xs' : 'text-sm'}`}>
                       R$ {entrada.cartao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </p>
                     <p className="text-xs text-gray-500">

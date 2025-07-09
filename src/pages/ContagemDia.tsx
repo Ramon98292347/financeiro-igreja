@@ -401,14 +401,22 @@ const ContagemDia: React.FC = () => {
       {entradasSalvas.length > 0 && (
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Entradas Salvas</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {entradasSalvas.map((entrada) => (
-              <EntradaSalvaCard
-                key={entrada.id}
-                entrada={entrada}
-                onDelete={handleDeleteEntrada}
-              />
-            ))}
+          <div className="relative">
+            <div className="overflow-x-auto scrollbar-hide">
+              <div className="flex space-x-4 pb-4" style={{ minWidth: 'max-content' }}>
+                {entradasSalvas.map((entrada) => (
+                  <div key={entrada.id} className="flex-shrink-0 w-72">
+                    <EntradaSalvaCard
+                      entrada={entrada}
+                      onDelete={handleDeleteEntrada}
+                      compact={true}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Gradient overlay para indicar scroll */}
+            <div className="absolute top-0 right-0 w-8 h-full bg-gradient-to-l from-white to-transparent pointer-events-none"></div>
           </div>
         </div>
       )}

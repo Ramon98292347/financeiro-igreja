@@ -77,10 +77,11 @@ const Dashboard: React.FC = () => {
   
   const totalGeralTodasEntradas = totalGeralEntradas + totalGeralEntradasDiarias;
 
-  // Calcular totais de dízimos e ofertas por forma de pagamento
+  // Calcular totais de dízimos, ofertas e ofertas missionárias por forma de pagamento
   const calculateDizimosOfertas = () => {
     const dizimos = { dinheiro: 0, pix: 0, cartao: 0, total: 0 };
     const ofertas = { dinheiro: 0, pix: 0, cartao: 0, total: 0 };
+    const ofertasMissionarias = { dinheiro: 0, pix: 0, cartao: 0, total: 0 };
     
     if (entradasSalvas) {
       const entradas = JSON.parse(entradasSalvas);
@@ -100,14 +101,19 @@ const Dashboard: React.FC = () => {
           ofertas.pix += entrada.pix || 0;
           ofertas.cartao += entrada.cartao || 0;
           ofertas.total += entrada.total || 0;
+        } else if (entrada.type === 'ofertas-missionarias') {
+          ofertasMissionarias.dinheiro += entrada.dinheiro || 0;
+          ofertasMissionarias.pix += entrada.pix || 0;
+          ofertasMissionarias.cartao += entrada.cartao || 0;
+          ofertasMissionarias.total += entrada.total || 0;
         }
       });
     }
     
-    return { dizimos, ofertas };
+    return { dizimos, ofertas, ofertasMissionarias };
   };
   
-  const { dizimos, ofertas } = calculateDizimosOfertas();
+  const { dizimos, ofertas, ofertasMissionarias } = calculateDizimosOfertas();
 
   const totalExits = monthlyTransactions
     .filter(t => t.type === 'saida')
@@ -229,8 +235,8 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Dízimos e Ofertas Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Dízimos, Ofertas e Ofertas Missionárias Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Dízimos */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-4">
@@ -314,6 +320,50 @@ const Dashboard: React.FC = () => {
               </div>
               <span className="font-medium text-gray-900">
                 R$ {ofertas.cartao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Ofertas Missionárias */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Ofertas Missionárias do Mês</p>
+              <p className="text-2xl font-bold text-orange-600">
+                R$ {ofertasMissionarias.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </p>
+            </div>
+            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+              <Banknote className="w-6 h-6 text-orange-600" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center space-x-2">
+                <Banknote className="w-4 h-4 text-gray-500" />
+                <span className="text-gray-600">Dinheiro</span>
+              </div>
+              <span className="font-medium text-gray-900">
+                R$ {ofertasMissionarias.dinheiro.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center space-x-2">
+                <Smartphone className="w-4 h-4 text-gray-500" />
+                <span className="text-gray-600">PIX/OCT</span>
+              </div>
+              <span className="font-medium text-gray-900">
+                R$ {ofertasMissionarias.pix.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center space-x-2">
+                <CreditCard className="w-4 h-4 text-gray-500" />
+                <span className="text-gray-600">Cartão</span>
+              </div>
+              <span className="font-medium text-gray-900">
+                R$ {ofertasMissionarias.cartao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </span>
             </div>
           </div>
