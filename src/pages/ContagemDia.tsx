@@ -3,6 +3,7 @@ import { Calculator, Save, RefreshCw, Plus, CreditCard, Smartphone, Banknote } f
 import { useFinance } from '../contexts/FinanceContext';
 import EntradaSalvaCard from '../components/ContagemDia/EntradaSalvaCard';
 import FichaDiariaModal from '../components/ContagemDia/FichaDiariaModal';
+import { getCurrentDateBrazil } from '../lib/dateUtils';
 
 interface CashDenomination {
   value: number;
@@ -23,6 +24,9 @@ interface EntradaSalva {
   dinheiro?: number;
   pix?: number;
   cartao?: number;
+  transfer?: number;
+  missionaryOffering?: number;
+  missionaryResponsible?: string;
 }
 
 interface PaymentData {
@@ -214,7 +218,7 @@ const ContagemDia: React.FC = () => {
   const handleFichaDiariaSave = async (fichaDiariaData: any) => {
     setIsSaving(true);
     try {
-      const today = new Date().toISOString().split('T')[0];
+      const today = getCurrentDateBrazil();
       const currentQuantities = getCurrentQuantities();
       const currentTotal = getCurrentGrandTotal();
       const currentPayment = getCurrentPayment();
@@ -236,7 +240,7 @@ const ContagemDia: React.FC = () => {
       // Criar entrada salva
       const novaEntrada: EntradaSalva = {
         id: Date.now().toString(),
-        date: today,
+        date: getCurrentDateBrazil(),
         total: currentTotal,
         responsible1: fichaDiariaData.responsible1,
         responsible2: fichaDiariaData.responsible2,
@@ -245,7 +249,10 @@ const ContagemDia: React.FC = () => {
         paymentMethod: 'dinheiro',
         dinheiro: currentPayment.dinheiro,
         pix: currentPayment.pix,
-        cartao: currentPayment.cartao
+        cartao: currentPayment.cartao,
+        transfer: fichaDiariaData.transfer,
+        missionaryOffering: fichaDiariaData.missionaryOffering,
+        missionaryResponsible: fichaDiariaData.missionaryResponsible
       };
 
       const novasEntradas = [...entradasSalvas, novaEntrada];

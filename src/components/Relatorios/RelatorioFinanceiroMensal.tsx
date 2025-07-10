@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Download, Mail, Save, Printer, Calendar } from 'lucide-react';
 import { Transaction } from '../../types';
+import { getCurrentDateBrazil } from '../../lib/dateUtils';
 
 interface RelatorioFinanceiroMensalProps {
   onBack: () => void;
@@ -66,7 +67,7 @@ const RelatorioFinanceiroMensal: React.FC<RelatorioFinanceiroMensalProps> = ({
     phone2: '',
     previousResponsible: '',
     currentResponsible: '',
-    reportClosingDate: new Date().toISOString().split('T')[0]
+    reportClosingDate: getCurrentDateBrazil()
   });
 
   const [financialMovement, setFinancialMovement] = useState<FinancialMovement>({

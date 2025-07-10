@@ -3,6 +3,7 @@ import React from 'react';
 import { TrendingUp, TrendingDown, DollarSign, Calendar, ArrowUpRight, ArrowDownRight, Banknote, CreditCard, Smartphone } from 'lucide-react';
 import { useFinance } from '../contexts/FinanceContext';
 import { useNavigate } from 'react-router-dom';
+import { getCurrentDateBrazil } from '../lib/dateUtils';
 
 const Dashboard: React.FC = () => {
   const { transactions, cashCounts } = useFinance();
@@ -122,9 +123,39 @@ const Dashboard: React.FC = () => {
   const balance = totalEntries - totalExits;
 
   const todayCashCount = cashCounts.find(c => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getCurrentDateBrazil();
     return c.date === today;
   });
+
+  // Calcular total de entradas do dia atual
+  const calculateTodayEntries = () => {
+    const today = getCurrentDateBrazil();
+    let totalToday = 0;
+    
+    // Somar entradas da contagem do dia
+    if (entradasSalvas) {
+      const entradas = JSON.parse(entradasSalvas);
+      const entradasHoje = entradas.filter((entrada: any) => entrada.date === today);
+      totalToday += entradasHoje.reduce((sum: number, entrada: any) => sum + (entrada.total || 0), 0);
+    }
+    
+    // Somar registros diários da ficha diária
+    if (registrosDiarios) {
+      const registros = JSON.parse(registrosDiarios);
+      const registrosHoje = registros.filter((registro: any) => registro.date === today);
+      totalToday += registrosHoje.reduce((sum: number, registro: any) => {
+        return sum + (registro.cashAmount || 0) + (registro.transfer || 0) + (registro.missionaryOffering || 0);
+      }, 0);
+    }
+    
+    // Somar transações de entrada do dia
+    const transacoesHoje = transactions.filter(t => t.type === 'entrada' && t.date === today);
+    totalToday += transacoesHoje.reduce((sum, t) => sum + t.amount, 0);
+    
+    return totalToday;
+  };
+  
+  const totalEntradasHoje = calculateTodayEntries();
 
   const recentTransactions = transactions
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -220,7 +251,7 @@ const Dashboard: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600">Caixa Hoje</p>
               <p className="text-2xl font-bold text-[#1A237E]">
-                R$ {(todayCashCount?.total || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                R$ {totalEntradasHoje.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </p>
             </div>
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -229,7 +260,7 @@ const Dashboard: React.FC = () => {
           </div>
           <div className="flex items-center mt-4 text-sm">
             <span className="text-gray-600">
-              {todayCashCount ? 'Contagem realizada' : 'Contagem pendente'}
+              {totalEntradasHoje > 0 ? 'Entradas registradas' : 'Nenhuma entrada hoje'}
             </span>
           </div>
         </div>

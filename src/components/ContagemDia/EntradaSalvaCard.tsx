@@ -24,7 +24,10 @@ interface EntradaSalvaCardProps {
 
 const EntradaSalvaCard: React.FC<EntradaSalvaCardProps> = ({ entrada, onDelete, compact = false }) => {
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR', {
+    // Garantir que a data seja interpretada corretamente
+    const [year, month, day] = dateString.split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    return date.toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'

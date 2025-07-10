@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Plus, Edit2, Trash2, ArrowDownLeft, Save, X } from 'lucide-react';
 import { useFinance } from '../contexts/FinanceContext';
+import { getCurrentDateBrazil } from '../lib/dateUtils';
 
 const CadastroSaidas: React.FC = () => {
   const { transactions, addTransaction, updateTransaction, deleteTransaction } = useFinance();
@@ -11,7 +12,7 @@ const CadastroSaidas: React.FC = () => {
     description: '',
     amount: '',
     category: '',
-    date: new Date().toISOString().split('T')[0]
+    date: getCurrentDateBrazil()
   });
   const [isCustomDescription, setIsCustomDescription] = useState(false);
   const [customDescription, setCustomDescription] = useState('');
@@ -63,7 +64,7 @@ const CadastroSaidas: React.FC = () => {
       description: '',
       amount: '',
       category: '',
-      date: new Date().toISOString().split('T')[0]
+      date: getCurrentDateBrazil()
     });
     setIsCustomDescription(false);
     setCustomDescription('');
@@ -188,7 +189,15 @@ const CadastroSaidas: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {new Date(transaction.date).toLocaleDateString('pt-BR')}
+                        {(() => {
+                          const [year, month, day] = transaction.date.split('-');
+                          const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                          return date.toLocaleDateString('pt-BR', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric'
+                          });
+                        })()}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">

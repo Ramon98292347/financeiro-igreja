@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Calendar, User, Trash2, DollarSign } from 'lucide-react';
+import { Calendar, User, Trash2, DollarSign, Banknote, CreditCard, Smartphone } from 'lucide-react';
 
 interface RegistroDiario {
   id: string;
@@ -12,6 +12,11 @@ interface RegistroDiario {
   transfer?: number;
   missionaryOffering?: number;
   missionaryResponsible?: string;
+  detalhes?: {
+    dizimos: { total: number; dinheiro: number; pix: number; cartao: number };
+    ofertas: { total: number; dinheiro: number; pix: number; cartao: number };
+    ofertasMissionarias: { total: number; dinheiro: number; pix: number; cartao: number };
+  };
 }
 
 interface RegistroDiarioCardProps {
@@ -21,7 +26,10 @@ interface RegistroDiarioCardProps {
 
 const RegistroDiarioCard: React.FC<RegistroDiarioCardProps> = ({ registro, onDelete }) => {
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR', {
+    // Garantir que a data seja interpretada corretamente
+    const [year, month, day] = dateString.split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    return date.toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
@@ -43,30 +51,135 @@ const RegistroDiarioCard: React.FC<RegistroDiarioCardProps> = ({ registro, onDel
         </button>
       </div>
       
-      <div className="space-y-2 mb-3">
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">Entradas em Dinheiro:</span>
-          <span className="font-bold text-green-600 flex items-center">
-            <DollarSign className="w-4 h-4 mr-1" />
-            R$ {registro.cashAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-          </span>
-        </div>
-        
-        {registro.transfer && registro.transfer > 0 && (
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Transferência:</span>
-            <span className="font-medium text-blue-600">
-              R$ {registro.transfer.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-            </span>
+      <div className="space-y-3 mb-3">
+        {registro.detalhes ? (
+          // Exibir detalhes consolidados da contagem do dia
+          <div className="space-y-3">
+            {/* Dízimos */}
+            {registro.detalhes.dizimos.total > 0 && (
+              <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-blue-800 flex items-center">
+                    <Banknote className="w-4 h-4 mr-1" />
+                    Dízimos
+                  </span>
+                  <span className="font-bold text-blue-600">
+                    R$ {registro.detalhes.dizimos.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                  <div className="flex items-center">
+                    <DollarSign className="w-3 h-3 mr-1 text-green-600" />
+                    <span>R$ {registro.detalhes.dizimos.dinheiro.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Smartphone className="w-3 h-3 mr-1 text-blue-600" />
+                    <span>R$ {registro.detalhes.dizimos.pix.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <CreditCard className="w-3 h-3 mr-1 text-purple-600" />
+                    <span>R$ {registro.detalhes.dizimos.cartao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Ofertas */}
+            {registro.detalhes.ofertas.total > 0 && (
+              <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-green-800 flex items-center">
+                    <Banknote className="w-4 h-4 mr-1" />
+                    Ofertas
+                  </span>
+                  <span className="font-bold text-green-600">
+                    R$ {registro.detalhes.ofertas.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                  <div className="flex items-center">
+                    <DollarSign className="w-3 h-3 mr-1 text-green-600" />
+                    <span>R$ {registro.detalhes.ofertas.dinheiro.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Smartphone className="w-3 h-3 mr-1 text-blue-600" />
+                    <span>R$ {registro.detalhes.ofertas.pix.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <CreditCard className="w-3 h-3 mr-1 text-purple-600" />
+                    <span>R$ {registro.detalhes.ofertas.cartao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Ofertas Missionárias */}
+            {registro.detalhes.ofertasMissionarias.total > 0 && (
+              <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-orange-800 flex items-center">
+                    <Banknote className="w-4 h-4 mr-1" />
+                    Ofertas Missionárias
+                  </span>
+                  <span className="font-bold text-orange-600">
+                    R$ {registro.detalhes.ofertasMissionarias.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                  <div className="flex items-center">
+                    <DollarSign className="w-3 h-3 mr-1 text-green-600" />
+                    <span>R$ {registro.detalhes.ofertasMissionarias.dinheiro.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Smartphone className="w-3 h-3 mr-1 text-blue-600" />
+                    <span>R$ {registro.detalhes.ofertasMissionarias.pix.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <CreditCard className="w-3 h-3 mr-1 text-purple-600" />
+                    <span>R$ {registro.detalhes.ofertasMissionarias.cartao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Total Geral */}
+            <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">Total Geral:</span>
+                <span className="font-bold text-gray-900 text-lg">
+                  R$ {registro.cashAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+            </div>
           </div>
-        )}
-        
-        {registro.missionaryOffering && registro.missionaryOffering > 0 && (
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Oferta Missionária:</span>
-            <span className="font-medium text-purple-600">
-              R$ {registro.missionaryOffering.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-            </span>
+        ) : (
+          // Exibir formato simples para registros manuais
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Entradas em Dinheiro:</span>
+              <span className="font-bold text-green-600 flex items-center">
+                <DollarSign className="w-4 h-4 mr-1" />
+                R$ {registro.cashAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </span>
+            </div>
+            
+            {registro.transfer && registro.transfer > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Transferência:</span>
+                <span className="font-medium text-blue-600">
+                  R$ {registro.transfer.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+            )}
+            
+            {registro.missionaryOffering && registro.missionaryOffering > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Oferta Missionária:</span>
+                <span className="font-medium text-purple-600">
+                  R$ {registro.missionaryOffering.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+            )}
           </div>
         )}
       </div>

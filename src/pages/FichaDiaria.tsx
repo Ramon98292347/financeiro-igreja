@@ -3,6 +3,7 @@ import { Calendar, Plus, Edit2, Trash2, FileText, Save, X, Download, Mail, PlusC
 import { useFinance } from '../contexts/FinanceContext';
 import RegistroDiarioCard from '../components/FichaDiaria/RegistroDiarioCard';
 import RegistrarEntradaModal from '../components/FichaDiaria/RegistrarEntradaModal';
+import { getCurrentDateBrazil } from '../lib/dateUtils';
 
 interface MonthlySheet {
   pdaCode: string;
@@ -44,7 +45,7 @@ const FichaDiaria: React.FC = () => {
     hasSafeBox: null,
     selfSustaining: null,
     reasonIfNot: '',
-    closingDate: new Date().toISOString().split('T')[0]
+    closingDate: getCurrentDateBrazil()
   });
 
   // Carregar registros diários e entradas salvas da contagem do dia
@@ -58,20 +59,74 @@ const FichaDiaria: React.FC = () => {
       registros = JSON.parse(savedRegistros);
     }
     
-    // Carregar entradas da contagem do dia
+    // Carregar entradas da contagem do dia e criar um card consolidado por dia
     if (entradasSalvas) {
       const entradas = JSON.parse(entradasSalvas);
-      const registrosFromContagem = entradas.map((entrada: any) => ({
-        id: `contagem-${entrada.id}`,
-        date: entrada.date,
-        cashAmount: entrada.total,
-        responsible1: entrada.responsible1,
-        responsible2: entrada.responsible2,
-        responsible3: entrada.responsible3,
-        transfer: 0,
-        missionaryOffering: 0,
-        missionaryResponsible: ''
-      }));
+      
+      // Agrupar entradas por data
+      const entradasPorData = entradas.reduce((acc: any, entrada: any) => {
+        const data = entrada.date;
+        if (!acc[data]) {
+          acc[data] = {
+            dizimos: { total: 0, dinheiro: 0, pix: 0, cartao: 0 },
+            ofertas: { total: 0, dinheiro: 0, pix: 0, cartao: 0 },
+            ofertasMissionarias: { total: 0, dinheiro: 0, pix: 0, cartao: 0 },
+            responsaveis: new Set()
+          };
+        }
+        
+        if (entrada.type === 'dizimos') {
+          acc[data].dizimos.total += entrada.total;
+          acc[data].dizimos.dinheiro += entrada.dinheiro || 0;
+          acc[data].dizimos.pix += entrada.pix || 0;
+          acc[data].dizimos.cartao += entrada.cartao || 0;
+        } else if (entrada.type === 'ofertas') {
+          acc[data].ofertas.total += entrada.total;
+          acc[data].ofertas.dinheiro += entrada.dinheiro || 0;
+          acc[data].ofertas.pix += entrada.pix || 0;
+          acc[data].ofertas.cartao += entrada.cartao || 0;
+        } else if (entrada.type === 'ofertas-missionarias') {
+          acc[data].ofertasMissionarias.total += entrada.total;
+          acc[data].ofertasMissionarias.dinheiro += entrada.dinheiro || 0;
+          acc[data].ofertasMissionarias.pix += entrada.pix || 0;
+          acc[data].ofertasMissionarias.cartao += entrada.cartao || 0;
+        }
+        
+        if (entrada.responsible1) acc[data].responsaveis.add(entrada.responsible1);
+        if (entrada.responsible2) acc[data].responsaveis.add(entrada.responsible2);
+        if (entrada.responsible3) acc[data].responsaveis.add(entrada.responsible3);
+        
+        return acc;
+      }, {});
+      
+      // Criar registros consolidados por data
+      const registrosFromContagem = Object.entries(entradasPorData).map(([data, totais]: [string, any]) => {
+        const totalGeral = totais.dizimos.total + totais.ofertas.total + totais.ofertasMissionarias.total;
+        const responsaveisArray = Array.from(totais.responsaveis);
+        
+        // Calcular total de transferências das entradas do dia
+        const totalTransferencias = entradas
+          .filter((entrada: any) => entrada.date === data)
+          .reduce((sum: number, entrada: any) => sum + (entrada.transfer || 0), 0);
+        
+        return {
+          id: `contagem-consolidado-${data}`,
+          date: data,
+          cashAmount: totalGeral,
+          responsible1: responsaveisArray[0] || '',
+          responsible2: responsaveisArray[1] || '',
+          responsible3: responsaveisArray[2] || '',
+          transfer: totalTransferencias,
+          missionaryOffering: totais.ofertasMissionarias.total,
+          missionaryResponsible: '',
+          // Dados detalhados para exibição
+          detalhes: {
+            dizimos: totais.dizimos,
+            ofertas: totais.ofertas,
+            ofertasMissionarias: totais.ofertasMissionarias
+          }
+        };
+      });
       
       // Combinar registros existentes com os da contagem do dia
       const todosRegistros = [...registros, ...registrosFromContagem];
@@ -102,7 +157,7 @@ const FichaDiaria: React.FC = () => {
     totalMissionary: registrosDiarios.reduce((sum, registro) => sum + (registro.missionaryOffering || 0), 0),
     transferenciaMesAnterior: transferenciaMesAnterior
   };
-  const grandTotal = totals.totalCash + totals.totalTransfer + totals.totalMissionary + totals.transferenciaMesAnterior;
+  const grandTotal = totals.totalCash + totals.totalTransfer - totals.totalMissionary + totals.transferenciaMesAnterior;
 
   const monthNames = [
     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -112,7 +167,7 @@ const FichaDiaria: React.FC = () => {
   const handleRegistrarEntrada = (data: any) => {
     const novoRegistro: RegistroDiario = {
       id: Date.now().toString(),
-      date: new Date().toISOString().split('T')[0],
+      date: getCurrentDateBrazil(),
       cashAmount: data.cashAmount,
       responsible1: data.responsible1,
       responsible2: data.responsible2,
